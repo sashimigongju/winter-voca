@@ -27,7 +27,7 @@ Supabase Auth + 관리자 전용 RLS + 학생별 읽기 전용 링크가 적용�
 
 ## 배포
 GitHub repository Settings → Pages → Build and deployment → Source: GitHub Actions.
-`.github/workflows/pages.yml`에서 main 변경 시 자동 배포.
+`.github/workflows/static.yml`에서 main 변경 시 자동 배포.
 예상 URL: https://sashimigongju.github.io/winter-voca/
 
 Supabase Authentication → URL Configuration에서 Site URL과 Redirect URLs에 실제 배포 주소를 등록하세요.
