@@ -123,13 +123,13 @@ function reviewRange(text:string):[number,number]|null {
 function lines(rows:string[]){return rows.join("\n");}
 function formatDate(ymd:string){return ymd.slice(5).replace("-","/");}
 function jsonReply(data:unknown,status=200,origin="https://sashimigongju.github.io"){
- return new Response(JSON.stringify(data),{status,headers:{"Content-Type":"application/json; charset=utf-8","Access-Control-Allow-Origin":origin,"Access-Control-Allow-Headers":"authorization,apikey,content-type","Access-Control-Allow-Methods":"POST,OPTIONS","Cache-Control":"no-store","Vary":"Origin"}});
+ return new Response(JSON.stringify(data),{status,headers:{"Content-Type":"application/json; charset=utf-8","Access-Control-Allow-Origin":origin,"Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST,OPTIONS","Cache-Control":"no-store","Vary":"Origin"}});
 }
 Deno.serve(async req=>{
  const origin=req.headers.get("Origin")||"";
  const cors=ORIGINS.has(origin)?origin:"https://sashimigongju.github.io";
  if(origin&&!ORIGINS.has(origin))return jsonReply({error:"허용되지 않은 요청입니다."},403,cors);
- if(req.method==="OPTIONS")return new Response(null,{status:204,headers:{"Access-Control-Allow-Origin":cors,"Access-Control-Allow-Headers":"authorization,apikey,content-type","Access-Control-Allow-Methods":"POST,OPTIONS","Vary":"Origin"}});
+ if(req.method==="OPTIONS")return new Response(null,{status:204,headers:{"Access-Control-Allow-Origin":cors,"Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST,OPTIONS","Vary":"Origin"}});
  if(req.method!=="POST")return jsonReply({error:"지원하지 않는 방식입니다."},405,cors);
  const header=req.headers.get("Authorization")||"";
  if(!/^Bearer\s+eyJ/.test(header))return jsonReply({error:"관리자 로그인이 필요합니다."},401,cors);
