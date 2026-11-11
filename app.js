@@ -60,7 +60,7 @@ async function navigate(){
   const id=++navigationVersion;
   const path=route();
   if(path==="/login"||path==="/reset"){login(path==="/reset");return;}
-  if(/^\\/student\\/[a-f0-9]{64}$/i.test(path)){void mountStudent({token:path.split("/")[2],root});return;}
+  if(path.startsWith("/student/") && /^[a-f0-9]{64}$/i.test(path.slice(9))){void mountStudent({token:path.slice(9),root});return;}
   render('<main class="center"><p>권한을 확인하는 중입니다…</p></main>');
   const user=await verifiedUser();if(id!==navigationVersion)return;
   currentUser=user;
