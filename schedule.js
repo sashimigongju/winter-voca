@@ -136,15 +136,21 @@ export async function mountAdmin({supabase,shell}){
   const days=[...document.querySelectorAll(".weekday-controls input:checked")].map(x=>Number(x.value));
   if(!date||!days.length||!Number.isInteger(count)||count<1||count>365)return note("시작일, 학습 요일, 횟수를 확인해 주세요.",true);
   const units=unitsOf(cat);const startIdx=units.findIndex(x=>x.unit_order===start);
-  if(startIdx<0||units.length-startIdx<count)return note("선택한 시작 범위에서 사용할 수 있는 분류가 부족합니다. 횟수를 줄여 주세요.",true);
+  if(startIdx<0)return note("유효한 시작 단원을 선택해 주세요.",true);
+  const category=state.cats.find(x=>x.key===cat);
+  // DAY 01–60 are regular study units. Extra vocabulary sections are only
+  // sequenced if the teacher deliberately starts within those extra sections.
+  const available=start<=category.day_count ? category.day_count-start+1 : units.length-startIdx;
+  const actualCount=Math.min(count,available);
+  if(actualCount<=0)return note("배정할 수 있는 단원이 없습니다.",true);
   let d=new Date(date+"T12:00:00");const drafts=[],existing=new Set(state.schedules.map(x=>x.study_date+"|"+x.category_key+"|"+x.unit_order));
-  for(let i=0,safety=0;i<count&&safety<2500;safety++,d.setDate(d.getDate()+1)){
+  for(let i=0,safety=0;i<actualCount&&safety<2500;safety++,d.setDate(d.getDate()+1)){
    if(!days.includes(d.getDay()))continue;
    const unit=units[startIdx+i];const dateStr=fmtDate(d);
    if(existing.has(dateStr+"|"+cat+"|"+unit.unit_order))return note("이미 동일한 날짜와 단어 범위가 있습니다. 중복 일정은 생성하지 않았습니다.",true);
    drafts.push({student_id:state.selected,study_date:dateStr,category_key:cat,unit_order:unit.unit_order,range_label:unit.label,is_done:false});i++;
   }
-  if(drafts.length!==count)return note("일정 계산에 실패했습니다.",true);
+  if(drafts.length!==actualCount)return note("일정 계산에 실패했습니다.",true);
   if(!confirm(drafts.length+"개의 학습 일정을 추가할까요? 기존 일정은 유지됩니다."))return;
   $("auto-generate").disabled=true;
   try{for(let i=0;i<drafts.length;i+=100){const r=await supabase.from("schedules").insert(drafts.slice(i,i+100));check(r)}state.month=drafts[0].study_date.slice(0,7);await refreshSchedules();note(drafts.length+"개의 일정이 추가되었습니다.")}catch(e){note(asError(e),true);await refreshSchedules()}
