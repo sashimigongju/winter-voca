@@ -101,3 +101,184 @@ body{background:#fff;color:#2c2c34}
 @media(max-width:700px){.pink-header{height:64px}.pink-header-inner{width:calc(100% - 30px)}.pink-logo b{font-size:40px}.pink-logo span{font-size:11px}.header-tools>span{display:none}.layout{padding:25px 15px}.admin-columns{grid-template-columns:1fr}.admin-side{min-height:auto}.student-list{max-height:220px}.admin-main{min-height:400px}.field-grid{grid-template-columns:1fr 1fr}.admin-intro h2{font-size:23px}.student-wrap{padding:42px 15px}.student-heading{font-size:28px}.student-profile{margin-bottom:30px}.admin-schedule .schedule-head,.admin-schedule .schedule-row{grid-template-columns:69px minmax(0,1fr) 34px 70px;gap:5px;padding:12px 5px}.schedule-actions{flex-direction:column}.schedule-head,.schedule-row{grid-template-columns:93px minmax(0,1fr) 40px;gap:7px;padding-left:8px;padding-right:8px}.schedule-date,.schedule-word strong{font-size:12px}.student-footer{gap:16px}}
 @media(max-width:390px){.field-grid{grid-template-columns:1fr}.detail-actions{width:100%}}
 @media print{.pink-header,.month-arrows,.header-tools,.admin-side,.admin-intro,.detail-block:not(.schedule-section),.schedule-actions,.done-toggle,.print-button{display:none!important}.admin-columns{display:block}.admin-main{box-shadow:none;border:0}.student-wrap{padding:10px}.schedule-row{break-inside:avoid}body{background:#fff}}
+
+
+/* 2026-11-11: Unified Onlyone logo, unclipped header, and minimal pink auth UI */
+:root {
+  --pink: #ef719b;
+  --pink-dark: #ce4f7c;
+  --pink-light: #fff1f6;
+  --border: #efeaed;
+  accent-color: var(--pink);
+}
+.site-logo {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  width: clamp(204px, 24vw, 276px);
+  max-width: min(64vw, 276px);
+  height: auto;
+  text-decoration: none;
+}
+.site-logo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 65px;
+  object-fit: contain;
+  object-position: left center;
+}
+.pink-header {
+  height: 85px;
+  overflow: visible;
+  border-bottom: 1px solid #f1eff1;
+  background: #fff;
+}
+.pink-header-inner {
+  min-height: 100%;
+  overflow: visible;
+  gap: 24px;
+}
+.header-logout {
+  font-size: 13px;
+  background: transparent;
+  border: 1px solid #eadfe4;
+  color: #67626a;
+  padding: 9px 15px;
+  border-radius: 9px;
+  white-space: nowrap;
+}
+.header-logout:hover,
+.header-logout:focus-visible {
+  color: var(--pink-dark);
+  border-color: #f5b8ce;
+  background: #fff9fb;
+}
+.auth-page {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 38px 18px;
+  background: radial-gradient(ellipse at 50% 0%, #fff1f6 0%, #fff9fb 40%, #fff 88%);
+}
+.auth-card {
+  width: min(100%, 428px);
+  background: #fff;
+  border: 1px solid #f4e6ec;
+  border-radius: 22px;
+  padding: 46px 39px 34px;
+  box-shadow: 0 17px 55px rgba(205, 89, 134, 0.075);
+}
+.auth-logo {
+  width: min(100%, 318px);
+  margin: 0 auto 27px;
+  text-align: center;
+}
+.auth-logo img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+}
+.auth-card h1 {
+  text-align: center;
+  font-weight: 600;
+  color: #302a31;
+  font-size: 23px;
+  letter-spacing: -0.045em;
+  margin: 0 0 31px;
+}
+.auth-form {
+  display: grid;
+  gap: 17px;
+}
+.auth-form label {
+  display: grid;
+  gap: 9px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #605b63;
+}
+.auth-form input {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid #e9e2e7;
+  border-radius: 10px;
+  background: #fff;
+  padding: 12px 14px;
+  font-size: 14px;
+  color: #302a31;
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.auth-form input::placeholder { color: #bcb4ba; }
+.auth-form input:hover { border-color: #eec5d6; }
+.auth-form input:focus {
+  border-color: var(--pink);
+  box-shadow: 0 0 0 3px #fae5ed;
+  outline: 0;
+}
+.auth-submit {
+  min-height: 48px;
+  width: 100%;
+  margin-top: 9px;
+  border: none;
+  border-radius: 10px;
+  background: var(--pink);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  transition: background .15s, transform .15s;
+}
+.auth-submit:hover { background: var(--pink-dark); }
+.auth-submit:active { transform: translateY(1px); }
+.auth-submit:disabled { opacity: .6; cursor: wait; }
+.auth-switch {
+  justify-self: center;
+  border: none;
+  background: transparent;
+  color: #a66d83;
+  font-size: 12px;
+  padding: 7px 10px;
+}
+.auth-switch:hover { color: var(--pink-dark); text-decoration: underline; }
+.auth-form #message {
+  margin: 0;
+  border-radius: 9px;
+  padding: 12px;
+  background: #fff1f6;
+  color: #a83c66;
+  font-size: 12px;
+  line-height: 1.6;
+  text-align: center;
+}
+.auth-form #message.error { background: #fff1f1; color: #b44252; }
+.auth-form #message[hidden] { display: none; }
+.panel { border-color: #f4e6ec; box-shadow: 0 12px 35px #b6487810; }
+.primary { background: var(--pink); }
+.secondary { background: #fff1f6; color: #bf5e83; }
+.brand, .link-button { color: var(--pink-dark); }
+.message { background: #fff1f6; color: #a83c66; }
+.student-wrap { padding-top: 48px; }
+.student-heading { margin-top: 0; }
+.admin-intro { margin-top: 0; }
+.detail-block > p:empty { display: none; }
+@media (max-width:700px) {
+  .pink-header { height: 68px; }
+  .pink-header-inner { width: calc(100% - 30px); }
+  .site-logo { width: clamp(180px, 52vw, 228px); max-width: 68vw; }
+  .site-logo img { max-height: 51px; }
+  .header-logout { padding: 7px 11px; font-size: 12px; }
+  .student-wrap { padding-top: 36px; }
+}
+@media (max-width:480px) {
+  .auth-page { padding: 24px 16px; }
+  .auth-card { padding: 37px 25px 28px; border-radius: 17px; }
+  .auth-logo { width: min(100%, 278px); margin-bottom: 22px; }
+  .auth-card h1 { font-size: 21px; margin-bottom: 26px; }
+}
+@media print {
+  .auth-page, .header-logout { display: none !important; }
+}
