@@ -1,42 +1,43 @@
-# Winter Voca — 관리자 인증 및 보호 페이지
+# 온리원에듀 · 개인 단어 스케줄표 (winter-voca)
 
-Supabase Auth와 데이터베이스 RLS를 이용한 온리원에듀 단어 학습 관리자 진입점입니다.
+Supabase Auth + 관리자 전용 RLS + 학생별 읽기 전용 링크가 적용된 운영용 웹앱입니다. GitHub Pages에 정적 배포됩니다.
 
-## 보안 모델
-- `#/login`: 이메일/비밀번호 로그인
-- `#/reset`: 이메일 비밀번호 재설정
-- `#/update-password`: 재설정 링크에서 새 비밀번호 설정
-- `#/admin`: **서버에서 확인한 로그인 계정 + public.admins 관리자 등록** 모두 필요
-- `students`, `schedules`, `vocab_categories`, `vocab_units`: Supabase RLS를 통해 관리자만 접근
-- 프런트엔드에서 관리자를 자가 등록할 수 없습니다.
+## 화면
+- `#/login`: 관리자 이메일·비밀번호 로그인
+- `#/reset`: 비밀번호 재설정 링크 발송
+- `#/admin`: 등록된 관리자만 접근 가능한 학생/스케줄 관리
+- `#/student/<64자리 토큰>`: 해당 학생의 월별 일정표만 조회 가능, 읽기 전용
+- 관리자는 학생 생성·검색·정보 수정·활성화 전환·개인 링크 복사/재발급 가능
+- 관리자 일정: 자동 DAY 배정(월~일 선택, 횟수, 시작 날짜, 시작 범위), 직접 추가, 완료 체크, 수정, 삭제, 월 이동, 월별 인쇄
+- 학생 화면: 학년/학교, 월별 일정, 완료 표시, 달 이동, 인쇄
+- 자동 생성은 **기존 일정 삭제 없이 추가**됩니다. 같은 날짜/책/단원 중복은 클라이언트가 사전 차단합니다.
 
-## 관리자 최초 등록
-1. Supabase Dashboard > Authentication > Users에서 본인 관리자 계정 생성
-2. SQL Editor에서 **아래 SQL 한 개만** 실행 (이메일 주소 변경):
+## Supabase 데이터
+- `admins`: 관리자 UUID (자가 승인 불가)
+- `students`: 학생 이름/학교/학년/활성화 상태/강한 개인 토큰
+- `schedules`: 학생별 날짜/책/단원/표시 범위/완료 여부
+- `vocab_categories`, `vocab_units`: 다섯 단어장 / 230분류
+- 학생 이름·학교, 관리 토큰은 **GitHub 코드에 저장하지 않습니다.**
+- `students`, `schedules`는 인증된 관리자만 조회·수정 가능 (RLS)
+- 학생 전용 공개 API는 Supabase Edge Function `student-schedule`이며 64자리 개인 토큰을 검증해 해당 학생의 정보만 반환합니다. 링크를 알면 누구나 해당 학생의 정보에 접근할 수 있으므로 **링크를 비공개로 전달하세요.**
 
-```sql
-insert into public.admins (id)
-select id from auth.users
-where email = 'YOUR_ADMIN_EMAIL@example.com'
-on conflict (id) do nothing;
-```
-
-3. GitHub Pages URL의 `#/login`에서 로그인합니다.
+## 백업/복구
+기존 관리자 UI는 `backup/pre-schedule-merge-2026-11-11` Git 브랜치에 보관했습니다.
+저장소 주소: https://github.com/sashimigongju/winter-voca/tree/backup/pre-schedule-merge-2026-11-11
 
 ## 배포
-`index.html`, `app.js`, `style.css`는 빌드가 필요 없는 정적 파일입니다.
-GitHub > Settings > Pages > Build and deployment 에서 **GitHub Actions**를 선택합니다.
-`.github/workflows/pages.yml`에서 main 브랜치 푸시 시 정적 앱을 배포합니다.
+GitHub repository Settings → Pages → Build and deployment → Source: GitHub Actions.
+`.github/workflows/pages.yml`에서 main 변경 시 자동 배포.
+예상 URL: https://sashimigongju.github.io/winter-voca/
 
-## Supabase Dashboard 설정
-Authentication > URL Configuration 에서 **Site URL**을 실제 GitHub Pages 배포 URL로 설정하고,
-**Redirect URLs**에 `https://sashimigongju.github.io/winter-voca/**`를 추가하세요.
-재설정 이메일 링크가 올바른 배포 URL로 돌아오려면 이 설정이 필요합니다.
+Supabase Authentication → URL Configuration에서 Site URL과 Redirect URLs에 실제 배포 주소를 등록하세요.
+`https://sashimigongju.github.io/winter-voca/**`
 
-## 기존 프로젝트 연결
-이 저장소는 기본 인증과 관리자 전용 학생 목록만 구축한 시작점입니다.
-기존 단어 스케줄 생성/학생용 공개 링크 전체 화면을 아직 이 저장소에 병합하지 않았습니다.
-특히 `public_token`은 단지 추측하기 어려운 값일 뿐, 그 자체로 익명 API 권한을 주지 않습니다.
-학생용 페이지가 필요하면 별도 서버/Edge Function에서 검증된 토큰으로 접근 범위를 제한하세요.
+## 운영 안내
+- 관리자 계정은 Authentication → Users에서 생성 후 `public.admins`에 별도 등록합니다.
+- 학생 정보는 관리자 화면의 **새 학생 등록**에서 입력합니다.
+- 실명 데이터는 확인되지 않은 기존 시안의 샘플 18명을 자동 이관하지 않았습니다.
+- 원래 ZIP 원본은 현재 접근 제한으로 열 수 없어서 2026-11-11에 저장된 관리자/학생 시안과 DB 스키마를 기준으로 주요 기능을 재구현했습니다. 원본 UI 픽셀 단위 일치와 모든 세부 기능의 1:1 대조는 추후 원본이 접근 가능할 때 확인해야 합니다.
 
-브라우저에 포함한 Supabase publishable key는 공개용 키입니다. **service role/secret key를 절대로 공개하지 마세요.**
+## 보안
+Supabase publishable key만 브라우저에 저장하고, service role/secret key는 Supabase 함수 환경에만 유지합니다. 각 테이블의 권한 검사는 Supabase RLS가 수행합니다. 개인 링크 재발급은 이전 링크를 즉시 무효화합니다.
