@@ -1,3 +1,4 @@
+import { mountAdminAssistant } from "./admin-assistant.js";
 // Private admin schedule management + read-only student link.
 // Supabase RLS is authoritative: all admin writes are checked server-side.
 const H=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -47,8 +48,9 @@ export async function mountAdmin({supabase,shell}){
  document.title="단어 학습 관리 | Onlyone Edu";
  const state={students:[],cats:[],units:[],schedules:[],selected:null,month:today().slice(0,7),filter:""};
  let life=true,loadSeq=0;
- const content='<div class="admin-intro"><div><h2>개인 단어 스케줄표 <em>· 관리</em></h2><p id="student-total">학생을 불러오는 중입니다.</p></div><button id="view-student" class="pink-outline" type="button">학생 화면 보기</button></div><div class="admin-columns"><aside class="admin-side"><h3>학생 목록</h3><input id="student-search" placeholder="이름 · 학교 검색" aria-label="학생 검색"/><div id="student-list" class="student-list"></div><div class="side-add"><h3>새 학생 등록</h3><form id="student-add-form"><label>이름<input name="name" placeholder="학생 이름" required maxlength="50"/></label><label>학교<input name="school" placeholder="예: 예일여중" required maxlength="50"/></label><label>학년<input name="grade" placeholder="중3" maxlength="20"/></label><button type="submit" class="pink-outline full">+ 학생 추가</button></form></div></aside><section class="admin-main" id="student-detail"><div class="empty">왼쪽에서 학생을 선택해 주세요.</div></section></div>';
+ const content='<div class="admin-intro"><div><h2>개인 단어 스케줄표 <em>· 관리</em></h2><p id="student-total">학생을 불러오는 중입니다.</p></div><button id="view-student" class="pink-outline" type="button">학생 화면 보기</button></div><div class="admin-columns"><aside class="admin-side"><h3>학생 목록</h3><input id="student-search" placeholder="이름 · 학교 검색" aria-label="학생 검색"/><div id="student-list" class="student-list"></div><div class="side-add"><h3>새 학생 등록</h3><form id="student-add-form"><label>이름<input name="name" placeholder="학생 이름" required maxlength="50"/></label><label>학교<input name="school" placeholder="예: 예일여중" required maxlength="50"/></label><label>학년<input name="grade" placeholder="중3" maxlength="20"/></label><button type="submit" class="pink-outline full">+ 학생 추가</button></form></div></aside><section class="admin-main" id="student-detail"><div class="empty">왼쪽에서 학생을 선택해 주세요.</div></section></div><div id="admin-command-host"></div>';
  shell(content);
+ mountAdminAssistant({supabase,onApplied:()=>refreshSchedules()});
  const note=(msg,error=false)=>{let t=$("admin-toast");if(!t){t=document.createElement("div");t.id="admin-toast";document.body.append(t)}t.textContent=msg;t.className=error?"admin-toast toast-error":"admin-toast";setTimeout(()=>{if(t.textContent===msg)t.classList.add("hidden")},3900)};
  const check=({error})=>{if(error)throw error};
  const init=async()=>{try{
