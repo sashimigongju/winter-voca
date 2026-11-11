@@ -1,12 +1,13 @@
 // Free rules-based Onlyone admin assistant. It is never mounted on student routes.
 const H = v => String(v ?? "").replace(/[&<>"']/g, x => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[x]));
 const examples=[
+  "최세영 오늘 결석이니 오늘 단어장부터 내일로 미뤄줘",
   "신도중 학생 명단 보여줘",
-  "최세영 11월 일정 알려줘",
+  "최세영 이번 달 일정 알려줘",
   "등록된 단어장 목록 보여줘",
-  "신도중 최세영 11월 16일 결석, 그날 이후 일정 밀어줘",
-  "김채원 능률 라이트 DAY 10부터 11월 16일 5회 배정해줘",
-  "김서윤 11월 17일 완료 처리해줘"
+  "능률 라이트 단원 목록 보여줘",
+  "김서윤 11월 17일 완료 처리해줘",
+  "김채원 능률 라이트 DAY 10부터 다음주 월요일 5회 배정해줘"
 ];
 const label=(s)=>s.replace(/\n/g,"<br>");
 export function mountAdminAssistant({ supabase, onApplied=()=>{} }){
