@@ -1,1 +1,103 @@
 :root{font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:#202638;background:#f6f7fb;font-synthesis:none}*{box-sizing:border-box}body{margin:0}a{color:#405bd7}button,input{font:inherit}button{cursor:pointer}.center{min-height:100vh;display:grid;place-items:center;padding:24px}.panel{width:min(100%,430px);background:white;border:1px solid #e9edf4;border-radius:20px;padding:32px;box-shadow:0 12px 40px #171d3410}.brand{font-size:13px;font-weight:800;color:#5266b2;letter-spacing:.06em}.panel h1{font-size:27px;line-height:1.3;margin:14px 0 10px}.muted{color:#697288;font-size:14px;line-height:1.6}.stack{display:grid;gap:14px;margin-top:26px}label{display:grid;gap:8px;font-size:13px;font-weight:700}input{width:100%;border:1px solid #d8deeb;border-radius:11px;padding:13px 14px;background:white;color:#202638}input:focus{outline:2px solid #b6c1fa;border-color:#5369d4}.primary,.secondary{border-radius:11px;padding:13px 17px;font-weight:700;border:0}.primary{background:#3e56c6;color:white}.secondary{background:#edf0f8;color:#24376e}.primary:disabled,.secondary:disabled{opacity:.55;cursor:wait}.message{background:#f0f3ff;padding:12px 14px;border-radius:10px;color:#31469f;font-size:13px;line-height:1.6}.message.error{background:#fff0f0;color:#aa3344}.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.link-button{border:0;background:none;color:#405bd7;padding:8px 0;font-size:13px}.layout{max-width:1050px;margin:0 auto;padding:32px 24px}.top{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}.card{background:#fff;border:1px solid #e7ebf2;border-radius:18px;padding:24px;margin-top:24px}.card h2{margin-top:0;font-size:21px}.data{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px}.data th,.data td{padding:13px 10px;border-bottom:1px solid #eceef5;text-align:left}.data th{color:#67718b;font-size:12px}.pill{display:inline-block;border-radius:20px;padding:5px 10px;background:#eff2ff;color:#3852b2;font-size:12px}.footer{font-size:12px;color:#8891a4;margin-top:32px}.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.row>*{flex:1;min-width:130px}@media(max-width:500px){.panel{padding:25px 20px}.layout{padding:20px 14px}.card{padding:18px}.data th,.data td{padding:11px 6px}}
+
+/* Onlyone Edu schedule interface */
+:root{--pink:#eb72a0;--pink-dark:#cc4e7d;--pink-light:#fdf0f6;--border:#e9e9ed}
+body{background:#fff;color:#2c2c34}
+.pink-header{height:86px;border-bottom:1px solid #eee;background:#fff}
+.pink-header-inner{height:100%;width:min(1180px,calc(100% - 40px));margin:auto;display:flex;align-items:center;justify-content:space-between}
+.pink-logo{color:var(--pink);display:flex;align-items:center;gap:12px}
+.pink-logo b{font-family:Arial,sans-serif;font-weight:900;font-size:52px;letter-spacing:-.13em;font-style:italic;line-height:1;padding-right:6px}
+.pink-logo span{font-size:15px;line-height:1;font-weight:800}
+.pink-logo small{display:block;text-align:center;font-size:10px;letter-spacing:.12em;margin-top:3px}
+.header-side{color:#999;font-size:12px;letter-spacing:.1em}
+.header-tools{display:flex;align-items:center;gap:18px;color:#999;font-size:12px}
+.layout{max-width:1180px;padding:38px 24px 70px}
+.admin-intro{display:flex;align-items:center;justify-content:space-between;gap:15px;margin:15px 0 28px}
+.admin-intro h2{font-size:26px;font-weight:500;margin:12px 0 9px;letter-spacing:-.04em}
+.admin-intro h2 em{color:var(--pink);font-style:normal}
+.admin-intro p,.detail-heading p{color:#aaa;font-size:13px;margin:0}
+.pink-eyebrow{color:var(--pink-dark);font-size:12px;font-weight:800;letter-spacing:.08em}
+.admin-columns{display:grid;grid-template-columns:250px minmax(0,1fr);gap:20px;align-items:start}
+.admin-side,.admin-main{border:1px solid var(--border);border-radius:13px;background:#fff;box-shadow:0 12px 32px #12121208}
+.admin-side{padding:20px;min-height:700px}
+.admin-side h3{font-size:15px;font-weight:500;margin:0 0 12px}
+.admin-side input{border-radius:7px;padding:11px;font-size:13px}
+.student-list{max-height:460px;overflow:auto;margin:18px -7px}
+.school-group{margin-bottom:15px}
+.school-group>small{display:block;font-size:11px;color:#aaa;padding:5px 8px}
+.student-entry{display:flex;align-items:center;justify-content:space-between;width:100%;border:0;background:#fff;text-align:left;padding:12px 9px;border-radius:7px;color:#36363b;font-size:13px}
+.student-entry small{color:#aaa;font-size:11px}
+.student-entry:hover,.student-entry.selected{background:var(--pink-light);color:var(--pink-dark)}
+.student-entry.selected small{color:var(--pink-dark)}
+.side-add{border-top:1px solid #eee;margin-top:20px;padding-top:22px}
+.side-add form{display:grid;gap:13px}
+.side-add label,.field-grid label{display:grid;gap:7px;font-size:12px;font-weight:500;color:#666}
+.pink-outline,.pink-button,.tiny-button{border-radius:7px;padding:10px 13px;line-height:1.4;font-size:12px;font-weight:600}
+.pink-outline{border:1px solid #f7c9da;color:var(--pink-dark);background:#fff7fa}
+.pink-outline:hover{background:#ffecf2}
+.pink-button{background:var(--pink);color:#fff;border:1px solid var(--pink)}
+.pink-button:hover{background:var(--pink-dark)}
+.tiny-button{background:#fff;border:1px solid #e5e5e8;color:#777}
+.full{width:100%;margin-top:2px}
+.admin-main{padding:24px;min-height:700px}
+.detail-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding-bottom:20px}
+.detail-heading h3{font-size:23px;font-weight:500;letter-spacing:-.03em;margin:0 0 7px}
+.detail-heading h3 small{font-size:12px;font-weight:400;color:#aaa;letter-spacing:0}
+.detail-actions{display:flex;gap:6px}
+.detail-block{padding:22px 0;border-top:1px solid #ededed}
+.detail-block h4{font-size:16px;font-weight:500;margin:0 0 7px}
+.detail-block>p{font-size:12px;color:#aaa;margin:0 0 15px;line-height:1.65}
+.copy-row{display:flex;gap:6px;margin:14px 0}
+.copy-row input{min-width:0;flex:1;font-size:12px;background:#fbfbfb}
+.copy-row button{white-space:nowrap}
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:15px 0}
+.field-grid input,.field-grid select{width:100%;border:1px solid #e0e0e6;border-radius:7px;padding:10px 11px;color:#444;background:#fff;font-size:13px}
+.field-grid select{height:43px;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.weekday-label{display:block;color:#777;font-size:12px;margin-bottom:9px}
+.weekday-controls{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px}
+.weekday-controls label{display:inline-flex;gap:6px;align-items:center;border:1px solid #ececf0;border-radius:7px;background:#fafafa;padding:8px 10px;color:#666;font-size:12px;cursor:pointer}
+.weekday-controls input{accent-color:var(--pink);width:14px;height:14px}
+.month-toolbar{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:14px 0 17px}
+.month-toolbar strong{font-size:17px}
+.month-toolbar h4{margin:0 0 6px}
+.month-toolbar small{display:block;color:#aaa;font-size:12px;margin-top:5px}
+.month-arrows{display:flex;align-items:center;gap:6px}
+.month-arrows button{background:#fff;border:1px solid #e9e9ed;border-radius:8px;min-width:35px;padding:8px;color:#777}
+.month-arrows span{font-size:12px;color:#999;padding:0 5px;white-space:nowrap}
+.schedule-head,.schedule-row{display:grid;grid-template-columns:120px minmax(0,1fr) 75px;align-items:center;gap:16px}
+.schedule-head{border-radius:9px;background:var(--pink-light);padding:14px 15px;color:#6c5660;font-size:12px}
+.schedule-row{padding:17px 15px;border-bottom:1px solid #ededed;font-size:13px}
+.schedule-date{white-space:nowrap;color:#555}
+.schedule-word{min-width:0;word-break:keep-all;overflow-wrap:anywhere}
+.schedule-word strong{display:block;font-size:13px;font-weight:600}
+.schedule-word small{display:block;color:#aaa;font-size:11px;margin-top:7px}
+.completion{text-align:center}
+.done-toggle,.readonly-done{width:24px;height:24px;border:2px solid #c9c9ce;background:#fff;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:transparent;font-size:14px}
+.done-toggle.done,.readonly-done.done{border-color:var(--pink);background:var(--pink);color:#fff}
+.done-toggle:hover{border-color:var(--pink)}
+.admin-schedule .schedule-head,.admin-schedule .schedule-row{grid-template-columns:92px minmax(0,1fr) 45px 100px;gap:12px}
+.schedule-actions{display:flex;gap:5px;justify-content:flex-end}
+.schedule-actions button{font-size:11px;background:#fff;color:#777;border:1px solid #eaeaea;border-radius:6px;padding:6px}
+.schedule-actions button:hover{color:var(--pink-dark);border-color:#f1bacc}
+.empty{text-align:center;color:#a0a0a8;padding:25px 10px;font-size:13px;line-height:1.7}
+.edit-panel{margin:16px 0 0;background:#fff9fc;border:1px solid #f8d7e5;border-radius:10px;padding:18px}
+.edit-actions{display:flex;gap:10px}
+.admin-toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);background:#27262b;color:#fff;border-radius:9px;padding:11px 18px;font-size:12px;box-shadow:0 10px 25px #1112;z-index:99;max-width:min(90vw,600px)}
+.toast-error{background:#ae385d}
+.hidden{display:none}
+.student-wrap{max-width:860px;margin:0 auto;padding:65px 25px}
+.student-heading{font-weight:400;letter-spacing:-.05em;font-size:32px;margin:12px 0 48px}
+.student-profile{border-left:4px solid var(--pink);padding:7px 0 7px 15px;margin-bottom:40px}
+.student-profile h2{font-size:24px;font-weight:400;margin:0 0 12px}
+.student-profile p{font-size:13px;color:#999;margin:0}
+.student-wrap .month-toolbar{margin-bottom:12px}
+.student-wrap .schedule-row{min-height:72px}
+.student-footer{display:flex;justify-content:space-between;border-top:1px solid #eee;color:#aaa;padding:18px 0;font-size:11px;margin-top:26px}
+.student-error{padding:40px;border-radius:12px;border:1px solid #eee}
+.student-error h1{font-size:25px}
+.student-error p{color:#999}
+.print-button{min-width:auto!important;padding:8px 12px!important}
+@media(max-width:850px){.admin-columns{grid-template-columns:220px minmax(0,1fr)}.admin-main{padding:18px}.schedule-head,.schedule-row{gap:9px}}
+@media(max-width:700px){.pink-header{height:64px}.pink-header-inner{width:calc(100% - 30px)}.pink-logo b{font-size:40px}.pink-logo span{font-size:11px}.header-tools>span{display:none}.layout{padding:25px 15px}.admin-columns{grid-template-columns:1fr}.admin-side{min-height:auto}.student-list{max-height:220px}.admin-main{min-height:400px}.field-grid{grid-template-columns:1fr 1fr}.admin-intro h2{font-size:23px}.student-wrap{padding:42px 15px}.student-heading{font-size:28px}.student-profile{margin-bottom:30px}.admin-schedule .schedule-head,.admin-schedule .schedule-row{grid-template-columns:69px minmax(0,1fr) 34px 70px;gap:5px;padding:12px 5px}.schedule-actions{flex-direction:column}.schedule-head,.schedule-row{grid-template-columns:93px minmax(0,1fr) 40px;gap:7px;padding-left:8px;padding-right:8px}.schedule-date,.schedule-word strong{font-size:12px}.student-footer{gap:16px}}
+@media(max-width:390px){.field-grid{grid-template-columns:1fr}.detail-actions{width:100%}}
+@media print{.pink-header,.month-arrows,.header-tools,.admin-side,.admin-intro,.detail-block:not(.schedule-section),.schedule-actions,.done-toggle,.print-button{display:none!important}.admin-columns{display:block}.admin-main{box-shadow:none;border:0}.student-wrap{padding:10px}.schedule-row{break-inside:avoid}body{background:#fff}}
