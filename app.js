@@ -1,3 +1,4 @@
+import { mountAdmin, mountStudent } from "./schedule.js";
 // Supabase browser client. Publishable keys are safe to ship with a browser app.
 // Never put a service_role or sb_secret key in this file.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
@@ -15,7 +16,10 @@ const escapeHTML = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;"
 function render(html){ root.innerHTML=html; }
 function message(text, error=false){ const box=document.querySelector("#message"); if(box){box.textContent=text;box.className="message"+(error?" error":"");box.hidden=false;} }
 function go(path){location.hash="#"+path;if(route()===path) void navigate();}
-function shell(content){render('<main class="layout"><header class="top"><div><div class="brand">ONLYONE EDU · WINTER VOCA</div><h1>단어 학습 관리</h1><p class="muted">'+escapeHTML(currentUser?.email)+'</p></div><button id="signout" class="secondary">로그아웃</button></header>'+content+'<p class="footer">학생 개인정보는 관리자의 인증과 데이터베이스 RLS 정책으로 보호됩니다.</p></main>');document.querySelector("#signout").onclick=async()=>{await supabase.auth.signOut();go("/login");};}
+function shell(content){
+  render('<header class="pink-header"><div class="pink-header-inner"><div class="pink-logo"><b>one</b><span>Onlyone Edu 1:1<small>은평점</small></span></div><div class="header-tools"><span>'+escapeHTML(currentUser?.email)+'</span><button id="signout" class="tiny-button">로그아웃</button></div></div></header><main class="layout">'+content+'</main>');
+  document.querySelector("#signout").onclick=async()=>{await supabase.auth.signOut();go("/login");};
+}
 async function verifiedUser(){const {data,error}=await supabase.auth.getUser();if(error||!data.user)return null;return data.user;}
 async function isAdmin(){const {data,error}=await supabase.from("admins").select("id").eq("id",currentUser.id).maybeSingle();if(error)throw error;return Boolean(data);}
 function login(reset=false){
@@ -42,11 +46,7 @@ function updatePassword(){
 function denied(){
   shell('<section class="card"><h2>접근 권한이 없습니다</h2><p class="muted">로그인은 성공했지만 관리자 명단에 등록되지 않은 계정입니다. 프로젝트 소유자에게 관리자 등록을 요청하세요.</p></section>');
 }
-function adminPage(){
-  shell('<section class="card"><div class="top"><div><h2>학생 관리</h2><p class="muted">관리자 전용 화면 · 등록된 학생만 표시됩니다.</p></div><span class="pill">ADMIN</span></div><div class="row"><input id="name" placeholder="학생 이름" maxlength="50" aria-label="학생 이름"/><input id="school" placeholder="학교" maxlength="50" aria-label="학교"/><input id="grade" placeholder="학년 (기본 중3)" maxlength="20" aria-label="학년"/><button class="primary" id="add">학생 추가</button></div><p id="message" hidden></p><div id="students"><p class="muted">학생 목록을 불러오는 중…</p></div></section><section class="card"><h2>학습 일정</h2><p class="muted">학생별 일정표와 단어 분류 데이터는 기존 프로젝트의 학생용 화면을 연결할 때 확장합니다. 현재 데이터는 관리자 전용으로 잠겨 있습니다.</p></section>');
-  document.querySelector("#add").onclick=async()=>{const btn=document.querySelector("#add");const name=document.querySelector("#name").value.trim();const school=document.querySelector("#school").value.trim();const grade=document.querySelector("#grade").value.trim()||"중3";if(!name||!school){message("이름과 학교를 입력하세요.",true);return;}btn.disabled=true;try{const {error}=await supabase.from("students").insert({name,school,grade});if(error)throw error;document.querySelector("#name").value="";document.querySelector("#school").value="";message("학생을 등록했습니다.");await loadStudents();}catch(e){message(e.message,true);}finally{btn.disabled=false;}};
-  void loadStudents();
-}
+function adminPage(){void mountAdmin({supabase,shell});}
 async function loadStudents(){
   const table=document.querySelector("#students");if(!table)return;
   const {data,error}=await supabase.from("students").select("id,name,school,grade,active,created_at").order("created_at",{ascending:false});
@@ -60,6 +60,7 @@ async function navigate(){
   const id=++navigationVersion;
   const path=route();
   if(path==="/login"||path==="/reset"){login(path==="/reset");return;}
+  if(/^\\/student\\/[a-f0-9]{64}$/i.test(path)){void mountStudent({token:path.split("/")[2],root});return;}
   render('<main class="center"><p>권한을 확인하는 중입니다…</p></main>');
   const user=await verifiedUser();if(id!==navigationVersion)return;
   currentUser=user;
