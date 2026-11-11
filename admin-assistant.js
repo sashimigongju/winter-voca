@@ -97,7 +97,7 @@ export function mountAdminAssistant({ supabase, onApplied=()=>{} }){
       const result=await invoke({action:"apply",plan_id:id});
       append("assistant",'<p class="helper-message">✓ '+H(result.message||"변경을 저장했어요.")+'</p>');
       const actions=root.querySelector(".helper-preview .helper-actions");if(actions)actions.remove();
-      try{await onApplied()}catch{}
+      try{await onApplied(result.applied||{})}catch{}
     }catch(err){append("assistant error","<p>"+H(err.message||"변경을 적용하지 못했어요. 다시 요청해 주세요.")+"</p>");}
     finally{lock(false);}
   }
