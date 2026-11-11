@@ -17,13 +17,13 @@ function render(html){ root.innerHTML=html; }
 function message(text, error=false){ const box=document.querySelector("#message"); if(box){box.textContent=text;box.className="message"+(error?" error":"");box.hidden=false;} }
 function go(path){location.hash="#"+path;if(route()===path) void navigate();}
 function shell(content){
-  render('<header class="pink-header"><div class="pink-header-inner"><div class="pink-logo"><b>one</b><span>Onlyone Edu 1:1<small>은평점</small></span></div><div class="header-tools"><span>'+escapeHTML(currentUser?.email)+'</span><button id="signout" class="tiny-button">로그아웃</button></div></div></header><main class="layout">'+content+'</main>');
+  render('<header class="pink-header"><div class="pink-header-inner"><a class="site-logo" href="#/admin" aria-label="온리원에듀"><img src="./assets/onlyone-pink-logo.webp" alt="Onlyone Edu 1:1" /></a><button id="signout" class="header-logout" type="button">로그아웃</button></div></header><main class="layout">'+content+'</main>');
   document.querySelector("#signout").onclick=async()=>{await supabase.auth.signOut();go("/login");};
 }
 async function verifiedUser(){const {data,error}=await supabase.auth.getUser();if(error||!data.user)return null;return data.user;}
 async function isAdmin(){const {data,error}=await supabase.from("admins").select("id").eq("id",currentUser.id).maybeSingle();if(error)throw error;return Boolean(data);}
 function login(reset=false){
-  render('<main class="center"><section class="panel"><div class="brand">ONLYONE EDU · WINTER VOCA</div><h1>'+(reset?"비밀번호 재설정":"관리자 로그인")+'</h1><p class="muted">'+(reset?"이메일로 재설정 링크를 전송합니다.":"인가된 관리자만 학생 정보와 학습 일정에 접근할 수 있습니다.")+'</p><form id="login" class="stack"><label>이메일<input type="email" name="email" autocomplete="email" required /></label>'+(reset?"":'<label>비밀번호<input type="password" name="password" autocomplete="current-password" required minlength="6" /></label>')+'<button class="primary" type="submit">'+(reset?"재설정 이메일 보내기":"로그인")+'</button><button class="link-button" type="button" id="swap">'+(reset?"로그인으로 돌아가기":"비밀번호를 잊으셨나요?")+'</button><p id="message" hidden></p></form></section></main>');
+  render('<main class="auth-page"><section class="auth-card"><div class="auth-logo"><img src="./assets/onlyone-pink-logo.webp" alt="Onlyone Edu 1:1" /></div><h1>'+(reset?"비밀번호 재설정":"관리자 로그인")+'</h1><form id="login" class="auth-form"><label>이메일<input type="email" name="email" autocomplete="email" placeholder="이메일 주소" required /></label>'+(reset?"":'<label>비밀번호<input type="password" name="password" autocomplete="current-password" placeholder="비밀번호" required minlength="6" /></label>')+'<button class="auth-submit" type="submit">'+(reset?"재설정 링크 보내기":"로그인")+'</button><button class="auth-switch" type="button" id="swap">'+(reset?"로그인으로 돌아가기":"비밀번호를 잊으셨나요?")+'</button><p id="message" hidden></p></form></section></main>');
   document.querySelector("#swap").onclick=()=>go(reset?"/login":"/reset");
   document.querySelector("#login").onsubmit=async e=>{
     e.preventDefault();const btn=e.currentTarget.querySelector("button[type=submit]");btn.disabled=true;
@@ -40,11 +40,11 @@ function login(reset=false){
   };
 }
 function updatePassword(){
-  render('<main class="center"><section class="panel"><div class="brand">ONLYONE EDU</div><h1>새 비밀번호 설정</h1><form id="password-form" class="stack"><label>새 비밀번호<input name="password" type="password" minlength="8" autocomplete="new-password" required /></label><button class="primary">변경하기</button><p id="message" hidden></p></form></section></main>');
+  render('<main class="auth-page"><section class="auth-card"><div class="auth-logo"><img src="./assets/onlyone-pink-logo.webp" alt="Onlyone Edu 1:1" /></div><h1>새 비밀번호 설정</h1><form id="password-form" class="auth-form"><label>새 비밀번호<input name="password" type="password" minlength="8" autocomplete="new-password" placeholder="새 비밀번호" required /></label><button class="auth-submit">변경하기</button><p id="message" hidden></p></form></section></main>');
   document.querySelector("#password-form").onsubmit=async e=>{e.preventDefault();const btn=e.currentTarget.querySelector("button");btn.disabled=true;try{const {error}=await supabase.auth.updateUser({password:new FormData(e.currentTarget).get("password")});if(error)throw error;message("변경되었습니다. 관리자 화면으로 이동하세요.");setTimeout(()=>go("/admin"),1200);}catch(err){message(err.message,true);}finally{btn.disabled=false;}};
 }
 function denied(){
-  shell('<section class="card"><h2>접근 권한이 없습니다</h2><p class="muted">로그인은 성공했지만 관리자 명단에 등록되지 않은 계정입니다. 프로젝트 소유자에게 관리자 등록을 요청하세요.</p></section>');
+  shell('<section class="card"><h2>접근 권한이 없습니다</h2><p class="muted">관리자 계정으로 로그인해 주세요.</p></section>');
 }
 function adminPage(){void mountAdmin({supabase,shell});}
 async function loadStudents(){
