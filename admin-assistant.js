@@ -1,13 +1,16 @@
 // Free rules-based Onlyone admin assistant. It is never mounted on student routes.
 const H = v => String(v ?? "").replace(/[&<>"']/g, x => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[x]));
 const examples=[
-  "최세영 오늘 결석이니 오늘 단어장부터 내일로 미뤄줘",
-  "신도중 학생 명단 보여줘",
+  "단어 일정이 없는 학생들 알려줘",
+  "이번 주 신도중 학생들 완료율 알려줘",
+  "신도중 학생들 다음 주 수요일 휴강이니까 전체 일정 미뤄줘",
+  "김채원 이번 주 금요일에 DAY 1~5 복습 추가해줘",
+  "변경 이력 보여줘",
+  "방금 수정한 일정 원래대로 돌려줘",
+  "최세영 오늘 결석이니 오늘 일정부터 내일로 미뤄줘",
   "최세영 이번 달 일정 알려줘",
-  "등록된 단어장 목록 보여줘",
-  "능률 라이트 단원 목록 보여줘",
-  "김서윤 11월 17일 완료 처리해줘",
-  "김채원 능률 라이트 DAY 10부터 다음주 월요일 5회 배정해줘"
+  "신도중 학생 명단 보여줘",
+  "등록된 단어장 목록 보여줘"
 ];
 const label=(s)=>s.replace(/\n/g,"<br>");
 export function mountAdminAssistant({ supabase, onApplied=()=>{} }){
@@ -45,7 +48,7 @@ export function mountAdminAssistant({ supabase, onApplied=()=>{} }){
     const ex=e.target.closest("button[data-example]");
     if(ex){input.value=ex.dataset.example;input.focus();return;}
     if(e.target.closest("#helper-cancel")) {
-      const el=e.target.closest(".helper-preview");if(el){el.querySelector(".helper-actions").remove();const note=document.createElement("small");note.textContent="취소됨";el.append(note);}pending=null;return;
+      const el=e.target.closest(".helper-preview");if(el){el.querySelector(".helper-actions")?.remove();const note=document.createElement("small");note.textContent="취소됨";el.append(note);}pending=null;return;
     }
     if(e.target.closest("#helper-apply"))void apply();
   });
@@ -79,10 +82,11 @@ export function mountAdminAssistant({ supabase, onApplied=()=>{} }){
       const preview=Array.isArray(result.preview)?result.preview.slice(0,100):[];
       let html='<p class="helper-message">'+H(result.message||"조회가 완료됐어요.")+'</p>';
       if(details.length)html+='<div class="helper-detail">'+details.map(x=>'<div>'+label(H(x))+'</div>').join("")+'</div>';
-      if(result.confirm_required&&result.plan_id){
+      if(result.confirm_required&&(result.plan_id||result.undo_id)){
         if(!preview.length)throw Error("미리보기 없는 변경은 실행할 수 없어요.");
-        pending=result.plan_id;
-        html+='<div class="helper-preview"><strong>변경 미리보기</strong><div class="helper-preview-rows">'+preview.map(x=>'<div>'+H(x)+'</div>').join("")+'</div><div class="helper-actions"><button type="button" id="helper-cancel" class="helper-secondary">취소</button><button type="button" id="helper-apply" class="helper-confirm">확인 후 적용</button></div><small>15분 내 승인 · 적용 후에는 관리자 화면을 새로고침합니다.</small></div>';
+        const isUndo=Boolean(result.undo_id);
+        pending=isUndo?{action:"undo",history_id:result.undo_id}:{action:"apply",plan_id:result.plan_id};
+        html+='<div class="helper-preview"><strong>'+(isUndo?"되돌리기 미리보기":"변경 미리보기")+'</strong><div class="helper-preview-rows">'+preview.map(x=>'<div>'+H(x)+'</div>').join("")+'</div><div class="helper-actions"><button type="button" id="helper-cancel" class="helper-secondary">취소</button><button type="button" id="helper-apply" class="helper-confirm">'+(isUndo?"되돌리기 실행":"확인 후 적용")+'</button></div><small>'+(isUndo?"되돌리기 후 다시 변경하려면 새 요청이 필요합니다.":"15분 내 승인 · 적용 후 화면을 갱신합니다.")+'</small></div>';
       }
       append("assistant",html);
     }catch(err){append("assistant error","<p>"+H(err.message||"명령을 해석하지 못했어요.")+"</p>");}
@@ -91,11 +95,11 @@ export function mountAdminAssistant({ supabase, onApplied=()=>{} }){
   form.onsubmit=e=>{e.preventDefault();void sendCommand(input.value);};
   async function apply(){
     if(!pending||busy)return;
-    const id=pending;pending=null;lock(true);
+    const command=pending;pending=null;lock(true);
     const button=root.querySelector("#helper-apply");
     if(button)button.disabled=true;
     try{
-      const result=await invoke({action:"apply",plan_id:id});
+      const result=await invoke(command);
       append("assistant",'<p class="helper-message">✓ '+H(result.message||"변경을 저장했어요.")+'</p>');
       const actions=root.querySelector(".helper-preview .helper-actions");if(actions)actions.remove();
       try{await onApplied(result.applied||{})}catch{}
