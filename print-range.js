@@ -65,8 +65,14 @@ export function normalizeExamRows(rows, students, units, categoryIdMap) {
     group.names.push(...getPrintableNames(row,units));
   }
   const rank = {"neunglyulBase":1,"neunglyulLite":2,"onlyone":3,"priorityBeginner":4,"neunglyul":5};
+  const unitRank = new Map(units.map(u=>[u.category_key+"|"+tidy(u.label),Number(u.unit_order)]));
+  const getBookKey = Object.fromEntries(Object.entries(categoryIdMap).map(([key, id])=>[id,key]));
+  const score = (bookId,name) => {
+    const day = /^day\s*0*(\d+)$/i.exec(name);
+    return day ? Number(day[1]) : (unitRank.get(getBookKey[bookId]+"|"+tidy(name))??999);
+  };
   return [...map.values()]
-    .map(group=>({...group,names:[...new Set(group.names)]}))
+    .map(group=>({...group,names:[...new Set(group.names)].sort((a,b)=>score(group.bookId,a)-score(group.bookId,b))}))
     .sort((a,b)=>a.school.localeCompare(b.school,"ko")
       || a.name.localeCompare(b.name,"ko")
       || (rank[a.bookId]??99)-(rank[b.bookId]??99));
