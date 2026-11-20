@@ -1,3 +1,4 @@
+import { normalizeExamRows } from "./print-range.js";
 // Administrator-only daily range query and secure handoff to the existing exam site.
 // No student name or schedule is written to the URL or to local storage.
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -20,23 +21,6 @@ function fromCommand(text,schoolNames=[]){
  return {date,school:schoolNames.find(name=>q.includes(name))||null,wantsPrint:/출력|인쇄/.test(q)};
 }
 const BOOK_IDS={"onlyone-voca":"onlyone","neungyul-headwords":"neunglyul","neungyul-basic":"neunglyulBase","neungyul-light":"neunglyulLite","priority-beginner":"priorityBeginner"};
-const canonical=(name)=>/^DAY\s*0*(\d+)$/i.test(name)?("Day "+String(Number(name.match(/\d+/)[0])).padStart(2,"0")):name.trim();
-function rangeUnits(s,units){
- const list=units.filter(x=>x.category_key===s.category_key);
- let orders=[...(Array.isArray(s.carry_unit_orders)?s.carry_unit_orders:[])];
- if(Number.isInteger(s.unit_order))orders.push(s.unit_order);
- const original=list.find(x=>x.unit_order===s.unit_order)?.label||"";
- if(s.range_label.trim()!==original&&orders.length===1){
-   const match=s.range_label.match(/^DAY\s*0*(\d+)\s*[-~–]\s*(?:DAY\s*)?0*(\d+)(?:\s*복습)?$/i);
-   if(match){const a=+match[1],b=+match[2];if(a<=b&&b-a<=65)orders=Array.from({length:b-a+1},(_,i)=>a+i);}
-   else if(!/^DAY\s*0*\d+$/i.test(s.range_label.trim()))return null;
- }
- orders=[...new Set(orders)].sort((a,b)=>a-b);
- if(!orders.length)return null;
- const labels=orders.map(n=>list.find(x=>x.unit_order===n)?.label);
- if(labels.some(x=>!x))return null;
- return labels.map(canonical);
-}
 export function mountTodayManager({supabase,students,cats,units,notify=()=>{}}){
  const host=document.createElement("section");host.className="today-manager";
  host.innerHTML='<div class="today-manager-head"><div><h3>날짜별 전체 단어 범위</h3><p>관리자 전용 · 조회 후 보카 플랫폼으로 시험지 전달</p></div><div class="today-manager-controls"><input type="date" id="daily-date" aria-label="시험 날짜"/><select id="daily-school" aria-label="학교"><option value="">전체 학교</option></select><button type="button" class="pink-outline" id="daily-refresh">범위 조회</button><button type="button" class="pink-button" id="daily-print">시험지 전체 출력</button></div></div><div id="daily-result" class="daily-result">조회할 날짜를 선택하세요.</div>';
@@ -81,46 +65,45 @@ export function mountTodayManager({supabase,students,cats,units,notify=()=>{}}){
      const items=byStudent.get(student.id)||[];
      if(!items.length){
        lastDisplayRows.push(student.school+" "+student.name+" · 해당 날짜 미배정");
-       return '<div class="daily-table-row is-unscheduled"><span>'+esc(student.school)+' · <b>'+esc(student.name)+'</b></span><span class="daily-unassigned">해당 날짜 미배정</span><span>—</span></div>';
+       return '<div class="daily-table-row is-unscheduled"><span>'+esc(student.school)+' · <b>'+esc(student.name)+'</b></span><span class="daily-unassigned">해당 날짜 미배정</span><span>—</span><span>—</span></div>';
      }
      return items.map(r=>{
        const category=byCat.get(r.category_key)||"직접 입력";
        lastDisplayRows.push(student.school+" "+student.name+" · "+category+" "+r.range_label+(r.is_done?" ✓":""));
-       return '<div class="daily-table-row"><span>'+esc(student.school)+' · <b>'+esc(student.name)+'</b></span><span><small>'+esc(category)+'</small><br>'+esc(r.range_label)+'</span><span>'+(r.is_done?"✓":"○")+'</span></div>';
+       return '<div class="daily-table-row"><span>'+esc(student.school)+' · <b>'+esc(student.name)+'</b></span><span><small>'+esc(category)+'</small><br>'+esc(r.range_label)+'</span><span>'+(r.is_done?"✓":"○")+'</span><span><button class="tiny-button" type="button" data-print-student="'+esc(student.id)+'">출력</button></span></div>';
      }).join("");
    }).join("");
    result.innerHTML='<p class="daily-counts">전체 '+roster.length+'명 · 일정 배정 '+scheduled+'명 · 미배정 '+missing+'명</p>'+
-      (roster.length?'<div class="daily-table-head"><span>학생</span><span>교재 · 단어 범위</span><span>완료</span></div>'+visibleRows:'<p>해당 학교에 등록된 학생이 없습니다.</p>');
+      (roster.length?'<div class="daily-table-head"><span>학생</span><span>교재 · 단어 범위</span><span>완료</span><span>시험지</span></div>'+visibleRows:'<p>해당 학교에 등록된 학생이 없습니다.</p>');
+   result.querySelectorAll("[data-print-student]").forEach(btn=>{btn.onclick=()=>print(lastRows.filter(r=>r.student_id===btn.dataset.printStudent))});
   }catch(e){
    if(id!==requestId)return;
    lastRows=[];lastDisplayRows=[];lastDate="";
    result.textContent="조회 실패: "+(e.message||String(e));
   }
  }
- function payload(){
+ function payload(selectedRows=lastRows){
   if(lastDate!==dateField.value)throw Error("변경한 날짜로 먼저 다시 조회해 주세요.");
-  const selected=lastRows,groups=new Map(),errors=[];
-  for(const r of selected){
-   const s=byId.get(r.student_id),bookId=BOOK_IDS[r.category_key],names=rangeUnits(r,units);
-   if(!s||!bookId||!names){errors.push((s?.name||"알 수 없음")+" · "+r.range_label);continue;}
-   const key=s.id+"|"+bookId;
-   if(!groups.has(key))groups.set(key,{name:s.name,bookId,examDate:lastDate,names:[]});
-   const group=groups.get(key);group.names=[...new Set([...group.names,...names])];
+  if(!selectedRows.length)throw Error("출력할 학생 일정이 없습니다.");
+  let groups;
+  try{
+    groups=normalizeExamRows(selectedRows,students,units,BOOK_IDS);
+  }catch(err){
+    throw Error("시험 범위 연결을 확인해 주세요. "+(err.message||String(err)));
   }
-  if(errors.length)throw Error("인쇄 범위를 정확히 해석하지 못한 일정이 있어요. 직접 수정한 범위를 확인해 주세요: "+errors.join(", "));
-  if(!groups.size)throw Error("출력할 학생 일정이 없습니다.");
-  if(groups.size>100)throw Error("한 번에 최대 100개 시험지 그룹까지 전달합니다.");
-  return {type:"ONLYONE_VOCA_DATA_V1",nonce:crypto.randomUUID(),students:[...groups.values()]};
+  if(!groups.length)throw Error("출력할 학생 일정이 없습니다.");
+  if(groups.length>100)throw Error("한 번에 최대 100개 시험지 그룹까지 전달합니다.");
+  return {type:"ONLYONE_VOCA_DATA_V1",nonce:crypto.randomUUID(),students:groups};
  }
- function print(){
-  let data;try{data=payload()}catch(e){notify(e.message,true);return;}
+ function print(selectedRows=lastRows){
+  let data;try{data=payload(selectedRows)}catch(e){notify(e.message,true);return;}
   const url=location.origin+"/voca-platform/?onlyone-import=1";
   let popup;const timeout=window.setTimeout(()=>{window.removeEventListener("message",send);notify("시험지 플랫폼이 연결되지 않았어요. 팝업과 배포 상태를 확인해 주세요.",true)},16000);
   function send(event){
    if(event.origin!==location.origin||event.source!==popup||event.data?.type!=="ONLYONE_VOCA_READY_V1")return;
    window.clearTimeout(timeout);window.removeEventListener("message",send);
    popup.postMessage(data,location.origin);
-   notify(data.students.length+"명(교재별) 범위를 시험지 플랫폼으로 전달했습니다.");
+   notify(data.students.length+"개 학생·교재 시험지의 범위를 전달했습니다. 보카 플랫폼에서 인쇄 / PDF를 누르면 됩니다.");
   }
   window.addEventListener("message",send);
   popup=window.open(url,"_blank");
