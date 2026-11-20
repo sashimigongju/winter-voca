@@ -4,9 +4,10 @@ const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&
 const parts=(date=new Date())=>Object.fromEntries(new Intl.DateTimeFormat("en-US",{timeZone:"Asia/Seoul",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(date).filter(x=>["year","month","day"].includes(x.type)).map(x=>[x.type,x.value]));
 export const kstDate=()=>{const p=parts();return p.year+"-"+p.month+"-"+p.day};
 const shift=(iso,diff)=>new Date(Date.parse(iso+"T12:00:00Z")+diff*86400000).toISOString().slice(0,10);
-function fromCommand(text){
+function fromCommand(text,schoolNames=[]){
  const q=String(text||"").trim();
- if(!/(전체|애들|학생|신도중|예일여중)/.test(q)||!/(범위|시험지|출력)/.test(q))return null;
+ if(!/(전체|애들|학생)/.test(q)&&!schoolNames.some(name=>q.includes(name)))return null;
+ if(!/(범위|시험지|출력)/.test(q))return null;
  const today=kstDate();let date=today;
  if(/모레/.test(q))date=shift(today,2);
  else if(/내일/.test(q))date=shift(today,1);
@@ -16,7 +17,7 @@ function fromCommand(text){
  if(iso)date=[iso[1],iso[2].padStart(2,"0"),iso[3].padStart(2,"0")].join("-");
  else if(md)date=today.slice(0,4)+"-"+md[1].padStart(2,"0")+"-"+md[2].padStart(2,"0");
  if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||new Date(date+"T12:00:00Z").toISOString().slice(0,10)!==date)return null;
- return {date,school:q.includes("신도중")?"신도중":q.includes("예일여중")?"예일여중":null,wantsPrint:/출력|인쇄/.test(q)};
+ return {date,school:schoolNames.find(name=>q.includes(name))||null,wantsPrint:/출력|인쇄/.test(q)};
 }
 const BOOK_IDS={"onlyone-voca":"onlyone","neungyul-headwords":"neunglyul","neungyul-basic":"neunglyulBase","neungyul-light":"neunglyulLite","priority-beginner":"priorityBeginner"};
 const canonical=(name)=>/^DAY\s*0*(\d+)$/i.test(name)?("Day "+String(Number(name.match(/\d+/)[0])).padStart(2,"0")):name.trim();
@@ -129,7 +130,7 @@ export function mountTodayManager({supabase,students,cats,units,notify=()=>{}}){
  host.querySelector("#daily-print").onclick=()=>{if(lastDate!==dateField.value){notify("먼저 선택한 날짜를 조회해 주세요.",true);return;}print()};
  schoolField.onchange=()=>void refresh();
  async function handleCommand(text){
-  const parsed=fromCommand(text);if(!parsed)return null;
+  const parsed=fromCommand(text,[...new Set(students.map(s=>s.school))]);if(!parsed)return null;
   dateField.value=parsed.date;schoolField.value=parsed.school||"";
   await refresh();
   if(lastDate!==parsed.date)return {message:"해당 날짜 조회에 실패했어요. 다시 조회해 주세요.",details:[]};
