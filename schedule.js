@@ -1,4 +1,5 @@
 import { mountAdminAssistant } from "./admin-assistant.js";
+import { mountTodayManager } from "./today-manager.js";
 // Private admin schedule management + read-only student link.
 // Supabase RLS is authoritative: all admin writes are checked server-side.
 const H=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -47,10 +48,10 @@ export async function mountStudent({token,root}){
 export async function mountAdmin({supabase,shell}){
  document.title="단어 학습 관리 | Onlyone Edu";
  const state={students:[],cats:[],units:[],schedules:[],selected:null,month:today().slice(0,7),filter:""};
- let life=true,loadSeq=0;
+ let life=true,loadSeq=0,todayManager=null;
  const content='<div class="admin-intro"><div><h2>개인 단어 스케줄표 <em>· 관리</em></h2><p id="student-total">학생을 불러오는 중입니다.</p></div><button id="view-student" class="pink-outline" type="button">학생 화면 보기</button></div><div class="admin-columns"><aside class="admin-side"><h3>학생 목록</h3><input id="student-search" placeholder="이름 · 학교 검색" aria-label="학생 검색"/><div id="student-list" class="student-list"></div><div class="side-add"><h3>새 학생 등록</h3><form id="student-add-form"><label>이름<input name="name" placeholder="학생 이름" required maxlength="50"/></label><label>학교<input name="school" placeholder="예: 예일여중" required maxlength="50"/></label><label>학년<input name="grade" placeholder="중3" maxlength="20"/></label><button type="submit" class="pink-outline full">+ 학생 추가</button></form></div></aside><section class="admin-main" id="student-detail"><div class="empty">왼쪽에서 학생을 선택해 주세요.</div></section></div><div id="admin-command-host"></div>';
  shell(content);
- mountAdminAssistant({supabase,onApplied:async applied=>{if(String(applied.operation||"").startsWith("rename")||applied.operation==="undo"){location.reload();return;}await refreshSchedules();}});
+ mountAdminAssistant({supabase,onDailyQuery:async text=>todayManager?.handleCommand(text),onApplied:async applied=>{if(String(applied.operation||"").startsWith("rename")||applied.operation==="undo"){location.reload();return;}await refreshSchedules();await todayManager?.refresh();}});
  const note=(msg,error=false)=>{let t=$("admin-toast");if(!t){t=document.createElement("div");t.id="admin-toast";document.body.append(t)}t.textContent=msg;t.className=error?"admin-toast toast-error":"admin-toast";setTimeout(()=>{if(t.textContent===msg)t.classList.add("hidden")},3900)};
  const check=({error})=>{if(error)throw error};
  const init=async()=>{try{
@@ -62,6 +63,7 @@ export async function mountAdmin({supabase,shell}){
    check(students);check(cats);check(units);
    if(!life)return;
    state.students=students.data??[];state.cats=cats.data??[];state.units=units.data??[];
+   todayManager=mountTodayManager({supabase,students:state.students,cats:state.cats,units:state.units,notify:note});
    renderList();
    if(state.students.length) await choose(state.students[0].id);
  }catch(e){note(asError(e),true);$("student-detail").innerHTML='<div class="empty">데이터를 불러오지 못했습니다. '+H(asError(e))+'</div>'}};
@@ -155,18 +157,18 @@ export async function mountAdmin({supabase,shell}){
   if(drafts.length!==actualCount)return note("일정 계산에 실패했습니다.",true);
   if(!confirm(drafts.length+"개의 학습 일정을 추가할까요? 기존 일정은 유지됩니다."))return;
   $("auto-generate").disabled=true;
-  try{for(let i=0;i<drafts.length;i+=100){const r=await supabase.from("schedules").insert(drafts.slice(i,i+100));check(r)}state.month=drafts[0].study_date.slice(0,7);await refreshSchedules();note(drafts.length+"개의 일정이 추가되었습니다.")}catch(e){note(asError(e),true);await refreshSchedules()}
+  try{for(let i=0;i<drafts.length;i+=100){const r=await supabase.from("schedules").insert(drafts.slice(i,i+100));check(r)}state.month=drafts[0].study_date.slice(0,7);await refreshSchedules();await todayManager?.refresh();note(drafts.length+"개의 일정이 추가되었습니다.")}catch(e){note(asError(e),true);await refreshSchedules()}
  }
  async function manualAdd(){
   const cat=$("manual-category").value;const unit=unitsOf(cat).find(x=>x.unit_order===Number($("manual-unit").value));const label=$("manual-label").value.trim()||unit?.label;const date=$("manual-date").value;
   if(!date||!label)return note("날짜와 단어 범위를 선택해 주세요.",true);
   if(label.length>100)return note("일정 이름은 100자 이하로 입력해 주세요.",true);
   $("manual-add").disabled=true;
-  try{const r=await supabase.from("schedules").insert({student_id:state.selected,study_date:date,category_key:cat,unit_order:unit?.unit_order,range_label:label});check(r);state.month=date.slice(0,7);await refreshSchedules();note("일정을 추가했습니다.")}catch(e){note(asError(e),true)}finally{const btn=$("manual-add");if(btn)btn.disabled=false}
+  try{const r=await supabase.from("schedules").insert({student_id:state.selected,study_date:date,category_key:cat,unit_order:unit?.unit_order,range_label:label});check(r);state.month=date.slice(0,7);await refreshSchedules();await todayManager?.refresh();note("일정을 추가했습니다.")}catch(e){note(asError(e),true)}finally{const btn=$("manual-add");if(btn)btn.disabled=false}
  }
  async function scheduleAction(action,id){
   const s=state.schedules.find(x=>x.id===id);if(!s)return;
-  if(action==="done"){try{check(await supabase.from("schedules").update({is_done:!s.is_done}).eq("id",id));s.is_done=!s.is_done;drawDetail()}catch(e){note(asError(e),true)}return}
+  if(action==="done"){try{check(await supabase.from("schedules").update({is_done:!s.is_done}).eq("id",id));s.is_done=!s.is_done;drawDetail();await todayManager?.refresh()}catch(e){note(asError(e),true)}return}
   if(action==="delete"){if(!confirm(showDay(s.study_date)+" "+s.range_label+" 일정을 삭제할까요?"))return;try{check(await supabase.from("schedules").delete().eq("id",id));await refreshSchedules();note("일정을 삭제했습니다.")}catch(e){note(asError(e),true)}return}
   if(action==="edit"){
    const slot=$("edit-slot");

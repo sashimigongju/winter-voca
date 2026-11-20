@@ -10,10 +10,11 @@ const examples=[
   "최세영 오늘 결석이니 오늘 일정부터 내일로 미뤄줘",
   "최세영 이번 달 일정 알려줘",
   "신도중 학생 명단 보여줘",
-  "등록된 단어장 목록 보여줘"
+  "등록된 단어장 목록 보여줘",
+  "오늘 애들 범위 한 번에 알려줘"
 ];
 const label=(s)=>s.replace(/\n/g,"<br>");
-export function mountAdminAssistant({ supabase, onApplied=()=>{} }){
+export function mountAdminAssistant({ supabase, onApplied=()=>{}, onDailyQuery=async()=>null }){
   const root=document.getElementById("admin-command-host");
   if(!root)return;
   root.innerHTML='<button class="helper-launch" type="button" id="helper-launch" aria-haspopup="dialog" aria-controls="helper-panel" aria-expanded="false"><span aria-hidden="true">✦</span> 일정 도우미</button>'+
@@ -77,7 +78,7 @@ export function mountAdminAssistant({ supabase, onApplied=()=>{} }){
     append("user","<p>"+H(text.trim())+"</p>");
     input.value="";lock(true);
     try{
-      const result=await invoke({action:"chat",text:text.trim()});
+      const result=(await onDailyQuery(text.trim())) || (await invoke({action:"chat",text:text.trim()}));
       const details=Array.isArray(result.details)?result.details.slice(0,50):[];
       const preview=Array.isArray(result.preview)?result.preview.slice(0,100):[];
       let html='<p class="helper-message">'+H(result.message||"조회가 완료됐어요.")+'</p>';
