@@ -419,3 +419,12 @@ body{background:#fff;color:#2c2c34}
 .daily-table-row small{font-size:11px;color:#777}
 .daily-table-row>span:last-child{text-align:center;color:#e87ca9;font-weight:700}
 @media(max-width:700px){.today-manager{padding:16px 12px;margin:12px 0 18px}.today-manager-head{display:block}.today-manager-controls{display:grid;grid-template-columns:1fr 1fr}.today-manager-controls input,.today-manager-controls select{width:100%;min-width:0}.today-manager-controls button{font-size:12px;padding:9px 4px}.daily-table-head,.daily-table-row{grid-template-columns:minmax(86px,1fr) minmax(125px,1.8fr) 30px;gap:4px;font-size:12px;padding:10px 4px}}
+
+
+/* Keep all registered students discoverable, including on phones. */
+.admin-side .student-list{max-height:none;overflow:visible}
+.daily-counts{margin:0 0 11px;font-size:12px;color:#685965;font-weight:700}
+.daily-table-row.is-unscheduled{background:#fafafa;color:#777}
+.daily-table-row.is-unscheduled>span:last-child{color:#aaa}
+.daily-unassigned{font-size:12px;color:#777}
+@media(max-width:700px){.admin-side .student-list{max-height:none;overflow:visible}}
