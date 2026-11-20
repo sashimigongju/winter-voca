@@ -19,7 +19,7 @@ function fromCommand(text){
  return {date,school:q.includes("신도중")?"신도중":q.includes("예일여중")?"예일여중":null,wantsPrint:/출력|인쇄/.test(q)};
 }
 const BOOK_IDS={"onlyone-voca":"onlyone","neungyul-headwords":"neunglyul","neungyul-basic":"neunglyulBase","neungyul-light":"neunglyulLite","priority-beginner":"priorityBeginner"};
-const canonical=(name)=>/^DAY\s*0*(\d+)$/i.test(name)?("Day "+String(Number(name.match(/\d+/)[0])).padStart(2,"0"))):name.trim();
+const canonical=(name)=>/^DAY\s*0*(\d+)$/i.test(name)?("Day "+String(Number(name.match(/\d+/)[0])).padStart(2,"0")):name.trim();
 function rangeUnits(s,units){
  const list=units.filter(x=>x.category_key===s.category_key);
  let orders=[...(Array.isArray(s.carry_unit_orders)?s.carry_unit_orders:[])];
