@@ -9,6 +9,18 @@
 </head>
 <body>
   <div id="app"><main class="center"><p>앱을 불러오는 중입니다…</p></main></div>
-  <script type="module" src="./app.js"></script>
+  <script type="module">
+    const root = document.querySelector("#app");
+    const showLoadError = () => {
+      const text = root?.textContent || "";
+      if (!text.includes("앱을 불러오는 중입니다") && !text.includes("권한을 확인하는 중입니다")) return;
+      root.innerHTML = '<main class="center"><section style="max-width:460px;margin:40px auto;padding:24px;border:1px solid #e9dfe5;border-radius:14px;background:#fff;color:#222;font-family:NanumGothic,sans-serif"><h1 style="font-size:20px">사이트 연결을 확인해 주세요</h1><p style="line-height:1.8">관리자 화면을 불러오지 못했어요. 인터넷 연결을 확인하고 새로고침해 주세요. 같은 문제가 계속되면 이 화면을 캡처해 전달해 주세요.</p><button id="onlyone-retry" style="padding:11px 18px;border-radius:9px;border:0;background:#e978a7;color:#fff">새로고침</button></section></main>';
+      document.getElementById("onlyone-retry")?.addEventListener("click", () => location.reload());
+    };
+    window.addEventListener("unhandledrejection", showLoadError);
+    window.addEventListener("error", showLoadError);
+    setTimeout(showLoadError, 15000);
+    import("./app.js?v=20261120-reload").catch(showLoadError);
+  </script>
 </body>
 </html>
