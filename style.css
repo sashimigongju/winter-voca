@@ -403,3 +403,19 @@ body{background:#fff;color:#2c2c34}
 @media print {
   #admin-command-host, .helper-launch, .helper-panel { display: none !important; }
 }
+
+/* Daily vocabulary schedule center (administrator only) */
+.today-manager{margin:20px 0 24px;padding:22px 24px;background:#fff;border:1px solid #efdfeb;border-radius:16px;color:#252525;font-family:NanumGothic,"나눔고딕",sans-serif}
+.today-manager-head{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;flex-wrap:wrap}
+.today-manager h3{margin:0 0 7px;font-size:19px;font-weight:800;color:#232323}
+.today-manager-head p{margin:0 0 16px;color:#777;font-size:12px}
+.today-manager-controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.today-manager-controls input,.today-manager-controls select{height:39px;padding:0 10px;border:1px solid #e2dfe1;border-radius:9px;background:#fff;color:#242424;font-size:13px;min-width:100px}
+.today-manager-controls button{min-height:39px;white-space:nowrap}
+.daily-result{margin-top:16px;color:#555;font-size:13px;overflow-x:auto}
+.daily-table-head,.daily-table-row{display:grid;grid-template-columns:minmax(95px,1fr) minmax(155px,2fr) 44px;gap:8px;align-items:center;padding:12px 6px}
+.daily-table-head{background:#fff4f8;font-size:12px;font-weight:800;color:#333;border-radius:8px}
+.daily-table-row{border-bottom:1px solid #ece7e9;line-height:1.6;color:#292929}
+.daily-table-row small{font-size:11px;color:#777}
+.daily-table-row>span:last-child{text-align:center;color:#e87ca9;font-weight:700}
+@media(max-width:700px){.today-manager{padding:16px 12px;margin:12px 0 18px}.today-manager-head{display:block}.today-manager-controls{display:grid;grid-template-columns:1fr 1fr}.today-manager-controls input,.today-manager-controls select{width:100%;min-width:0}.today-manager-controls button{font-size:12px;padding:9px 4px}.daily-table-head,.daily-table-row{grid-template-columns:minmax(86px,1fr) minmax(125px,1.8fr) 30px;gap:4px;font-size:12px;padding:10px 4px}}
