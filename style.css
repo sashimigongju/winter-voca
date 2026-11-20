@@ -428,3 +428,15 @@ body{background:#fff;color:#2c2c34}
 .daily-table-row.is-unscheduled>span:last-child{color:#aaa}
 .daily-unassigned{font-size:12px;color:#777}
 @media(max-width:700px){.admin-side .student-list{max-height:none;overflow:visible}}
+
+/* Administrator exam export: compact 4-column list, printable students only. */
+.today-manager .daily-table-head,
+.today-manager .daily-table-row{grid-template-columns:minmax(100px,1fr) minmax(155px,2fr) 32px 53px;gap:8px}
+.today-manager .daily-table-row [data-print-student]{padding:6px 8px;border:1px solid #f0bad2;background:#fff;color:#bd5082;font-weight:700;border-radius:7px;font-size:11px}
+.today-manager .daily-table-row [data-print-student]:hover{background:#fff0f7}
+.today-manager .daily-table-row>span:last-child{text-align:center}
+@media(max-width:700px){
+  .today-manager .daily-table-head,
+  .today-manager .daily-table-row{grid-template-columns:minmax(78px,1fr) minmax(105px,1.8fr) 25px 48px;gap:3px;font-size:11px;padding:9px 3px}
+  .today-manager .daily-table-row [data-print-student]{font-size:10px;padding:6px 4px}
+}

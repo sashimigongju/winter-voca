@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "mkdir -p dist && cp index.html style.css dist/ && cp -r assets dist/ && esbuild app.js --bundle --minify --platform=browser --format=esm --target=safari16 --outfile=dist/app.js && test -s dist/app.js",
-    "check": "node --check app.js && node --check schedule.js && node --check admin-assistant.js && node --check today-manager.js"
+    "check": "node --check app.js && node --check schedule.js && node --check admin-assistant.js && node --check today-manager.js && node --check print-range.js && node --test tests/print-range.test.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.58.0"
