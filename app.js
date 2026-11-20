@@ -1,7 +1,7 @@
 import { mountAdmin, mountStudent } from "./schedule.js";
 // Supabase browser client. Publishable keys are safe to ship with a browser app.
 // Never put a service_role or sb_secret key in this file.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
+import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
   "https://jacgyoeelysvzycjrnlo.supabase.co",

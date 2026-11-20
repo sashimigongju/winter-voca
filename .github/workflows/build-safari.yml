@@ -1,0 +1,41 @@
+name: Verify bundled Safari build
+on:
+  push:
+    branches:
+      - fix/bundle-supabase-for-safari-20261120
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned dependencies
+        run: |
+          if [ ! -f package-lock.json ]; then
+            npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+          fi
+          npm ci --no-audit --no-fund
+      - run: npm run check
+      - run: npm run build
+      - name: Verify static site contains bundled Supabase client
+        run: |
+          test -s dist/index.html
+          test -s dist/app.js
+          test -s dist/assets/onlyone-pink-logo.webp
+          ! grep -q 'https://esm.sh/@supabase' dist/app.js
+      - name: Commit npm lockfile on feature branch
+        if: github.event_name == 'push'
+        run: |
+          if ! git ls-files --error-unmatch package-lock.json >/dev/null 2>&1; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add package-lock.json
+            git commit -m "build: commit reproducible npm dependency lockfile"
+            git push origin HEAD:fix/bundle-supabase-for-safari-20261120
+          fi
