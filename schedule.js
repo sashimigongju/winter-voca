@@ -69,7 +69,7 @@ export async function mountAdmin({supabase,shell}){
  }catch(e){note(asError(e),true);$("student-detail").innerHTML='<div class="empty">데이터를 불러오지 못했습니다. '+H(asError(e))+'</div>'}};
  $("student-search").oninput=e=>{state.filter=e.target.value;renderList()};
  $("student-add-form").onsubmit=async e=>{e.preventDefault();const btn=e.currentTarget.querySelector("button");btn.disabled=true;const data=new FormData(e.currentTarget);try{
-   const result=await supabase.from("students").insert({name:String(data.get("name")).trim(),school:String(data.get("school")).trim(),grade:String(data.get("grade")).trim()||"중3"}).select("id,name,school,grade,active,public_token,created_at").single();check(result);state.students.push(result.data);e.currentTarget.reset();renderList();await choose(result.data.id);note("학생이 등록되었습니다.");
+   const result=await supabase.from("students").insert({name:String(data.get("name")).trim(),school:String(data.get("school")).trim(),grade:String(data.get("grade")).trim()||"중3"}).select("id,name,school,grade,active,public_token,created_at").single();check(result);state.students.push(result.data);e.currentTarget.reset();renderList();await choose(result.data.id);await todayManager?.refresh();note("학생이 등록되었습니다.");
  }catch(err){note(asError(err),true)}finally{btn.disabled=false}};
  $("view-student").onclick=()=>{const s=state.students.find(x=>x.id===state.selected);if(!s)return note("학생을 먼저 선택해 주세요.",true);window.open(studentUrl(s.public_token),"_blank","noopener,noreferrer")};
  function renderList(){
